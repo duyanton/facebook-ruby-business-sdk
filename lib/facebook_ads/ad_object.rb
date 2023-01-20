@@ -159,7 +159,7 @@ module FacebookAds
     end
 
     def session=(session)
-      @session = session.is_a?(Hash) ? Session.new(session) : session
+      @session = session.is_a?(Hash) ? Session.new(**session) : session
     end
 
     private
