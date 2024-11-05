@@ -1,20 +1,8 @@
-# Copyright (c) 2017-present, Facebook, Inc. All rights reserved.
-#
-# You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
-# copy, modify, and distribute this software in source code or binary form for use
-# in connection with the web services and APIs provided by Facebook.
-#
-# As with any software that integrates with the Facebook platform, your use of
-# this software is subject to the Facebook Platform Policy
-# [http://developers.facebook.com/policy/]. This copyright notice shall be
-# included in all copies or substantial portions of the software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
 
 # FB:AUTOGEN
 
@@ -50,10 +38,12 @@ module FacebookAds
 
     field :about, 'string'
     field :age_range, 'AgeRange'
+    field :avatar_2d_profile_picture, 'AvatarProfilePicture'
     field :birthday, 'string'
+    field :community, 'Group'
     field :cover, 'UserCoverPhoto'
     field :currency, 'Currency'
-    field :education, { list: 'object' }
+    field :education, { list: 'EducationExperience' }
     field :email, 'string'
     field :favorite_athletes, { list: 'Experience' }
     field :favorite_teams, { list: 'Experience' }
@@ -66,6 +56,7 @@ module FacebookAds
     field :install_type, 'string'
     field :installed, 'bool'
     field :is_guest_user, 'bool'
+    field :is_work_account, 'bool'
     field :languages, { list: 'Experience' }
     field :last_name, 'string'
     field :link, 'string'
@@ -82,7 +73,7 @@ module FacebookAds
     field :profile_pic, 'string'
     field :quotes, 'string'
     field :relationship_status, 'string'
-    field :shared_login_upgrade_required_by, 'object'
+    field :shared_login_upgrade_required_by, 'datetime'
     field :short_name, 'string'
     field :significant_other, 'User'
     field :sports, { list: 'Experience' }
@@ -98,18 +89,20 @@ module FacebookAds
     has_edge :access_tokens do |edge|
       edge.delete
       edge.post 'User' do |api|
-        api.has_param :business_app, 'int'
+        api.has_param :business_app, 'string'
         api.has_param :page_id, 'string'
-        api.has_param :scope, { list: 'Permission' }
+        api.has_param :scope, { list: 'string' }
+        api.has_param :set_token_expires_in_60_days, 'bool'
       end
     end
 
     has_edge :accounts do |edge|
       edge.get 'Page' do |api|
+        api.has_param :ad_id, 'string'
         api.has_param :is_place, 'bool'
         api.has_param :is_promotable, 'bool'
       end
-      edge.post 'Page' do |api|
+      edge.post do |api|
         api.has_param :about, 'string'
         api.has_param :address, 'string'
         api.has_param :category, 'int'
@@ -173,6 +166,10 @@ module FacebookAds
       edge.get 'AdAccount'
     end
 
+    has_edge :assigned_applications do |edge|
+      edge.get 'Application'
+    end
+
     has_edge :assigned_business_asset_groups do |edge|
       edge.get 'BusinessAssetGroup' do |api|
         api.has_param :contained_asset_id, 'string'
@@ -190,7 +187,7 @@ module FacebookAds
     end
 
     has_edge :avatars do |edge|
-      edge.get
+      edge.get 'Avatar'
     end
 
     has_edge :business_users do |edge|
@@ -211,7 +208,7 @@ module FacebookAds
         api.has_param :survey_business_type, { enum: -> { Business::SURVEY_BUSINESS_TYPE }}
         api.has_param :survey_num_assets, 'int'
         api.has_param :survey_num_people, 'int'
-        api.has_param :timezone_id, 'int'
+        api.has_param :timezone_id, { enum: -> { Business::TIMEZONE_ID }}
         api.has_param :vertical, { enum: -> { Business::VERTICAL }}
       end
     end
@@ -219,6 +216,7 @@ module FacebookAds
     has_edge :conversations do |edge|
       edge.get 'UnifiedThread' do |api|
         api.has_param :folder, 'string'
+        api.has_param :platform, { enum: -> { UnifiedThread::PLATFORM }}
         api.has_param :tags, { list: 'string' }
         api.has_param :user_id, 'string'
       end
@@ -246,22 +244,21 @@ module FacebookAds
       end
       edge.post 'Post' do |api|
         api.has_param :actions, 'object'
-        api.has_param :adaptive_type, 'string'
         api.has_param :album_id, 'string'
         api.has_param :android_key_hash, 'string'
-        api.has_param :animated_effect_id, 'int'
         api.has_param :application_id, 'string'
         api.has_param :asked_fun_fact_prompt_id, 'int'
-        api.has_param :asset3d_id, 'int'
+        api.has_param :asset3d_id, 'string'
         api.has_param :associated_id, 'string'
         api.has_param :attach_place_suggestion, 'bool'
         api.has_param :attached_media, { list: 'object' }
         api.has_param :audience_exp, 'bool'
         api.has_param :backdated_time, 'datetime'
         api.has_param :backdated_time_granularity, { enum: -> { Post::BACKDATED_TIME_GRANULARITY }}
+        api.has_param :breaking_news, 'bool'
+        api.has_param :breaking_news_expiration, 'int'
         api.has_param :call_to_action, 'object'
         api.has_param :caption, 'string'
-        api.has_param :checkin_entry_point, { enum: -> { Post::CHECKIN_ENTRY_POINT }}
         api.has_param :child_attachments, { list: 'object' }
         api.has_param :client_mutation_id, 'string'
         api.has_param :composer_entry_picker, 'string'
@@ -282,11 +279,9 @@ module FacebookAds
         api.has_param :expanded_width, 'int'
         api.has_param :feed_targeting, 'object'
         api.has_param :formatting, { enum: -> { Post::FORMATTING }}
-        api.has_param :fun_fact_prompt_id, 'int'
+        api.has_param :fun_fact_prompt_id, 'string'
         api.has_param :fun_fact_toastee_id, 'int'
-        api.has_param :has_nickname, 'bool'
         api.has_param :height, 'int'
-        api.has_param :holiday_card, 'string'
         api.has_param :home_checkin_city_id, 'object'
         api.has_param :image_crops, 'hash'
         api.has_param :implicit_with_tags, { list: 'int' }
@@ -307,7 +302,6 @@ module FacebookAds
         api.has_param :name, 'string'
         api.has_param :nectar_module, 'string'
         api.has_param :object_attachment, 'string'
-        api.has_param :offer_like_post_id, 'int'
         api.has_param :og_action_type_id, 'string'
         api.has_param :og_hide_object_attachment, 'bool'
         api.has_param :og_icon_id, 'string'
@@ -331,7 +325,6 @@ module FacebookAds
         api.has_param :publish_event_id, 'int'
         api.has_param :published, 'bool'
         api.has_param :quote, 'string'
-        api.has_param :react_mode_metadata, 'string'
         api.has_param :ref, { list: 'string' }
         api.has_param :referenceable_image_ids, { list: 'string' }
         api.has_param :referral_id, 'string'
@@ -382,23 +375,6 @@ module FacebookAds
         api.has_param :goal_amount, 'int'
         api.has_param :name, 'string'
         api.has_param :page_id, 'string'
-      end
-    end
-
-    has_edge :game_items do |edge|
-      edge.post 'GameItem' do |api|
-        api.has_param :action, { enum: -> { GameItem::ACTION }}
-        api.has_param :app_id, 'string'
-        api.has_param :drop_table_id, 'string'
-        api.has_param :ext_id, 'string'
-        api.has_param :item_id, 'string'
-        api.has_param :quantity, 'int'
-      end
-    end
-
-    has_edge :game_times do |edge|
-      edge.post do |api|
-        api.has_param :action, { enum: %w{END HEARTBEAT START }}
       end
     end
 
@@ -474,6 +450,7 @@ module FacebookAds
 
     has_edge :notifications do |edge|
       edge.post 'User' do |api|
+        api.has_param :bot_message_payload_elements, 'string'
         api.has_param :filtering, { list: { enum: -> { User::FILTERING }} }
         api.has_param :href, 'object'
         api.has_param :label, 'string'
@@ -550,7 +527,6 @@ module FacebookAds
         api.has_param :proxied_app_id, 'string'
         api.has_param :published, 'bool'
         api.has_param :qn, 'string'
-        api.has_param :scheduled_publish_time, 'int'
         api.has_param :spherical_metadata, 'hash'
         api.has_param :sponsor_id, 'string'
         api.has_param :sponsor_relationship, 'int'
@@ -568,7 +544,6 @@ module FacebookAds
 
     has_edge :picture do |edge|
       edge.get 'ProfilePictureSource' do |api|
-        api.has_param :breaking_change, { enum: -> { ProfilePictureSource::BREAKING_CHANGE }}
         api.has_param :height, 'int'
         api.has_param :redirect, 'bool'
         api.has_param :type, { enum: -> { ProfilePictureSource::TYPE }}
@@ -604,8 +579,6 @@ module FacebookAds
         api.has_param :type, { enum: -> { AdVideo::TYPE }}
       end
       edge.post 'AdVideo' do |api|
-        api.has_param :adaptive_type, 'string'
-        api.has_param :animated_effect_id, 'int'
         api.has_param :application_id, 'string'
         api.has_param :asked_fun_fact_prompt_id, 'int'
         api.has_param :audio_story_wave_animation_handle, 'string'
@@ -630,12 +603,10 @@ module FacebookAds
         api.has_param :formatting, { enum: -> { AdVideo::FORMATTING }}
         api.has_param :fov, 'int'
         api.has_param :front_z_rotation, 'double'
-        api.has_param :fun_fact_prompt_id, 'int'
+        api.has_param :fun_fact_prompt_id, 'string'
         api.has_param :fun_fact_toastee_id, 'int'
         api.has_param :guide, { list: { list: 'int' } }
         api.has_param :guide_enabled, 'bool'
-        api.has_param :has_nickname, 'bool'
-        api.has_param :holiday_card, 'string'
         api.has_param :initial_heading, 'int'
         api.has_param :initial_pitch, 'int'
         api.has_param :instant_game_entry_point_data, 'string'
@@ -646,7 +617,6 @@ module FacebookAds
         api.has_param :location_source_id, 'string'
         api.has_param :manual_privacy, 'bool'
         api.has_param :no_story, 'bool'
-        api.has_param :offer_like_post_id, 'int'
         api.has_param :og_action_type_id, 'string'
         api.has_param :og_icon_id, 'string'
         api.has_param :og_object_id, 'string'
@@ -656,7 +626,6 @@ module FacebookAds
         api.has_param :original_projection_type, { enum: -> { AdVideo::ORIGINAL_PROJECTION_TYPE }}
         api.has_param :privacy, 'string'
         api.has_param :publish_event_id, 'int'
-        api.has_param :react_mode_metadata, 'string'
         api.has_param :referenced_sticker_id, 'string'
         api.has_param :replace_video_id, 'string'
         api.has_param :slideshow_spec, 'hash'

@@ -1,20 +1,8 @@
-# Copyright (c) 2017-present, Facebook, Inc. All rights reserved.
-#
-# You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
-# copy, modify, and distribute this software in source code or binary form for use
-# in connection with the web services and APIs provided by Facebook.
-#
-# As with any software that integrates with the Facebook platform, your use of
-# this software is subject to the Facebook Platform Policy
-# [http://developers.facebook.com/policy/]. This copyright notice shall be
-# included in all copies or substantial portions of the software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
 
 # FB:AUTOGEN
 
@@ -30,6 +18,7 @@ module FacebookAds
       "COST_CAP",
       "LOWEST_COST_WITHOUT_CAP",
       "LOWEST_COST_WITH_BID_CAP",
+      "LOWEST_COST_WITH_MIN_ROAS",
     ]
 
     BILLING_EVENT = [
@@ -76,15 +65,19 @@ module FacebookAds
       "LANDING_PAGE_VIEWS",
       "LEAD_GENERATION",
       "LINK_CLICKS",
+      "MEANINGFUL_CALL_ATTEMPT",
       "MESSAGING_APPOINTMENT_CONVERSION",
       "MESSAGING_PURCHASE_CONVERSION",
       "NONE",
       "OFFSITE_CONVERSIONS",
       "PAGE_LIKES",
       "POST_ENGAGEMENT",
+      "PROFILE_VISIT",
       "QUALITY_CALL",
       "QUALITY_LEAD",
       "REACH",
+      "REMINDERS_SET",
+      "SUBSCRIBERS",
       "THRUPLAY",
       "VALUE",
       "VISIT_INSTAGRAM_PROFILE",
@@ -98,35 +91,49 @@ module FacebookAds
     ]
 
     DATE_PRESET = [
-      "data_maximum",
-      "last_14d",
-      "last_28d",
-      "last_30d",
-      "last_3d",
-      "last_7d",
-      "last_90d",
-      "last_month",
-      "last_quarter",
-      "last_week_mon_sun",
-      "last_week_sun_sat",
-      "last_year",
-      "maximum",
-      "this_month",
-      "this_quarter",
-      "this_week_mon_today",
-      "this_week_sun_today",
-      "this_year",
-      "today",
-      "yesterday",
+      "DATA_MAXIMUM",
+      "LAST_14D",
+      "LAST_28D",
+      "LAST_30D",
+      "LAST_3D",
+      "LAST_7D",
+      "LAST_90D",
+      "LAST_MONTH",
+      "LAST_QUARTER",
+      "LAST_WEEK_MON_SUN",
+      "LAST_WEEK_SUN_SAT",
+      "LAST_YEAR",
+      "MAXIMUM",
+      "THIS_MONTH",
+      "THIS_QUARTER",
+      "THIS_WEEK_MON_TODAY",
+      "THIS_WEEK_SUN_TODAY",
+      "THIS_YEAR",
+      "TODAY",
+      "YESTERDAY",
     ]
 
     DESTINATION_TYPE = [
       "APP",
       "APPLINKS_AUTOMATIC",
       "FACEBOOK",
+      "FACEBOOK_PAGE",
+      "INSTAGRAM_DIRECT",
+      "INSTAGRAM_PROFILE",
+      "INSTAGRAM_PROFILE_AND_FACEBOOK_PAGE",
+      "MESSAGING_INSTAGRAM_DIRECT_MESSENGER",
+      "MESSAGING_INSTAGRAM_DIRECT_MESSENGER_WHATSAPP",
+      "MESSAGING_INSTAGRAM_DIRECT_WHATSAPP",
+      "MESSAGING_MESSENGER_WHATSAPP",
       "MESSENGER",
-      "UNDEFINED",
+      "ON_AD",
+      "ON_EVENT",
+      "ON_PAGE",
+      "ON_POST",
+      "ON_VIDEO",
+      "SHOP_AUTOMATIC",
       "WEBSITE",
+      "WHATSAPP",
     ]
 
     EXECUTION_OPTIONS = [
@@ -160,9 +167,16 @@ module FacebookAds
       "VIDEO_SOUND_ON",
     ]
 
+    REGIONAL_REGULATED_CATEGORIES = [
+      "0",
+      "1",
+      "2",
+    ]
+
     TUNE_FOR_CATEGORY = [
       "CREDIT",
       "EMPLOYMENT",
+      "FINANCIAL_PRODUCTS_SERVICES",
       "HOUSING",
       "ISSUES_ELECTIONS_POLITICS",
       "NONE",
@@ -192,8 +206,11 @@ module FacebookAds
     field :bid_info, 'map<string, unsigned int>'
     field :bid_strategy, { enum: -> { BID_STRATEGY }}
     field :billing_event, { enum: -> { BILLING_EVENT }}
+    field :brand_safety_config, 'BrandSafetyCampaignConfig'
     field :budget_remaining, 'string'
     field :campaign, 'Campaign'
+    field :campaign_active_time, 'string'
+    field :campaign_attribution, 'string'
     field :campaign_id, 'string'
     field :configured_status, { enum: -> { CONFIGURED_STATUS }}
     field :created_time, 'datetime'
@@ -202,6 +219,8 @@ module FacebookAds
     field :daily_min_spend_target, 'string'
     field :daily_spend_cap, 'string'
     field :destination_type, 'string'
+    field :dsa_beneficiary, 'string'
+    field :dsa_payor, 'string'
     field :effective_status, { enum: -> { EFFECTIVE_STATUS }}
     field :end_time, 'datetime'
     field :existing_customer_budget_percentage, 'int'
@@ -209,6 +228,7 @@ module FacebookAds
     field :full_funnel_exploration_mode, 'string'
     field :id, 'string'
     field :instagram_actor_id, 'string'
+    field :is_budget_schedule_enabled, 'bool'
     field :is_dynamic_creative, 'bool'
     field :issues_info, { list: 'AdCampaignIssuesInfo' }
     field :learning_stage_info, 'AdCampaignLearningStageInfo'
@@ -216,6 +236,8 @@ module FacebookAds
     field :lifetime_imps, 'int'
     field :lifetime_min_spend_target, 'string'
     field :lifetime_spend_cap, 'string'
+    field :max_budget_spend_percentage, 'string'
+    field :min_budget_spend_percentage, 'string'
     field :multi_optimization_goal_weight, 'string'
     field :name, 'string'
     field :optimization_goal, { enum: -> { OPTIMIZATION_GOAL }}
@@ -224,6 +246,8 @@ module FacebookAds
     field :promoted_object, 'AdPromotedObject'
     field :recommendations, { list: 'AdRecommendation' }
     field :recurring_budget_semantics, 'bool'
+    field :regional_regulated_categories, { list: 'string' }
+    field :regional_regulation_identities, 'RegionalRegulationIdentities'
     field :review_feedback, 'string'
     field :rf_prediction_id, 'string'
     field :source_adset, 'AdSet'
@@ -231,7 +255,7 @@ module FacebookAds
     field :start_time, 'datetime'
     field :status, { enum: -> { STATUS }}
     field :targeting, 'Targeting'
-    field :targeting_optimization_types, 'hash'
+    field :targeting_optimization_types, { list: 'hash' }
     field :time_based_ad_rotation_id_blocks, { list: { list: 'int' } }
     field :time_based_ad_rotation_intervals, { list: 'int' }
     field :updated_time, 'datetime'
@@ -246,7 +270,6 @@ module FacebookAds
     field :time_stop, 'datetime'
     field :topline_id, 'string'
     field :tune_for_category, { enum: -> { TUNE_FOR_CATEGORY }}
-    field :upstream_events, 'hash'
 
     has_edge :activities do |edge|
       edge.get 'AdActivity' do |api|
@@ -289,7 +312,7 @@ module FacebookAds
       edge.get 'Ad' do |api|
         api.has_param :date_preset, { enum: -> { Ad::DATE_PRESET }}
         api.has_param :effective_status, { list: 'string' }
-        api.has_param :time_range, 'object'
+        api.has_param :time_range, 'hash'
         api.has_param :updated_since, 'int'
       end
     end
@@ -300,12 +323,21 @@ module FacebookAds
       end
     end
 
+    has_edge :budget_schedules do |edge|
+      edge.post 'HighDemandPeriod' do |api|
+        api.has_param :budget_value, 'int'
+        api.has_param :budget_value_type, { enum: -> { HighDemandPeriod::BUDGET_VALUE_TYPE }}
+        api.has_param :time_end, 'int'
+        api.has_param :time_start, 'int'
+      end
+    end
+
     has_edge :copies do |edge|
       edge.get 'AdSet' do |api|
         api.has_param :date_preset, { enum: -> { AdSet::DATE_PRESET }}
         api.has_param :effective_status, { list: { enum: -> { AdSet::EFFECTIVE_STATUS }} }
         api.has_param :is_completed, 'bool'
-        api.has_param :time_range, 'object'
+        api.has_param :time_range, 'hash'
       end
       edge.post 'AdSet' do |api|
         api.has_param :campaign_id, 'string'
@@ -345,8 +377,8 @@ module FacebookAds
         api.has_param :summary, { list: 'string' }
         api.has_param :summary_action_breakdowns, { list: { enum: -> { AdsInsights::SUMMARY_ACTION_BREAKDOWNS }} }
         api.has_param :time_increment, 'string'
-        api.has_param :time_range, 'object'
-        api.has_param :time_ranges, { list: 'object' }
+        api.has_param :time_range, 'hash'
+        api.has_param :time_ranges, { list: 'hash' }
         api.has_param :use_account_attribution_setting, 'bool'
         api.has_param :use_unified_attribution_setting, 'bool'
       end
@@ -368,10 +400,22 @@ module FacebookAds
         api.has_param :summary, { list: 'string' }
         api.has_param :summary_action_breakdowns, { list: { enum: -> { AdsInsights::SUMMARY_ACTION_BREAKDOWNS }} }
         api.has_param :time_increment, 'string'
-        api.has_param :time_range, 'object'
-        api.has_param :time_ranges, { list: 'object' }
+        api.has_param :time_range, 'hash'
+        api.has_param :time_ranges, { list: 'hash' }
         api.has_param :use_account_attribution_setting, 'bool'
         api.has_param :use_unified_attribution_setting, 'bool'
+      end
+    end
+
+    has_edge :message_delivery_estimate do |edge|
+      edge.get 'MessageDeliveryEstimate' do |api|
+        api.has_param :bid_amount, 'int'
+        api.has_param :lifetime_budget, 'int'
+        api.has_param :lifetime_in_days, 'int'
+        api.has_param :optimization_goal, { enum: -> { MessageDeliveryEstimate::OPTIMIZATION_GOAL }}
+        api.has_param :pacing_type, { enum: -> { MessageDeliveryEstimate::PACING_TYPE }}
+        api.has_param :promoted_object, 'object'
+        api.has_param :targeting_spec, 'Targeting'
       end
     end
 

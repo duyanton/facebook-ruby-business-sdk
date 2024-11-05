@@ -1,20 +1,8 @@
-# Copyright (c) 2017-present, Facebook, Inc. All rights reserved.
-#
-# You are hereby granted a non-exclusive, worldwide, royalty-free license to use,
-# copy, modify, and distribute this software in source code or binary form for use
-# in connection with the web services and APIs provided by Facebook.
-#
-# As with any software that integrates with the Facebook platform, your use of
-# this software is subject to the Facebook Platform Policy
-# [http://developers.facebook.com/policy/]. This copyright notice shall be
-# included in all copies or substantial portions of the software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+# All rights reserved.
+
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
 
 # FB:AUTOGEN
 
@@ -77,14 +65,30 @@ module FacebookAds
       "EYMT",
     ]
 
-    LOGGING_SOURCE = [
-      "MESSENGER_BOT",
+    OWNER_PERMISSIONS = [
+      "DEVELOP",
+      "MANAGE",
+      "MANAGE_EXTENSIONS",
+      "MANAGE_PHONE",
+      "MANAGE_PHONE_ASSETS",
+      "MANAGE_TEMPLATES",
+      "MESSAGING",
+      "VIEW_COST",
+      "VIEW_PHONE_ASSETS",
+      "VIEW_TEMPLATES",
     ]
 
-    LOGGING_TARGET = [
-      "APP",
-      "APP_AND_PAGE",
-      "PAGE",
+    PARTNER_PERMISSIONS = [
+      "DEVELOP",
+      "MANAGE",
+      "MANAGE_EXTENSIONS",
+      "MANAGE_PHONE",
+      "MANAGE_PHONE_ASSETS",
+      "MANAGE_TEMPLATES",
+      "MESSAGING",
+      "VIEW_COST",
+      "VIEW_PHONE_ASSETS",
+      "VIEW_TEMPLATES",
     ]
 
 
@@ -113,6 +117,8 @@ module FacebookAds
     field :auto_event_mapping_android, { list: 'object' }
     field :auto_event_mapping_ios, { list: 'object' }
     field :auto_event_setup_enabled, 'bool'
+    field :auto_log_app_events_default, 'bool'
+    field :auto_log_app_events_enabled, 'bool'
     field :business, 'Business'
     field :canvas_fluid_height, 'bool'
     field :canvas_fluid_width, 'int'
@@ -165,6 +171,7 @@ module FacebookAds
     field :privacy_policy_url, 'string'
     field :profile_section_url, 'string'
     field :property_id, 'string'
+    field :protected_mode_rules, 'object'
     field :real_time_mode_devices, { list: 'string' }
     field :restrictions, 'object'
     field :restrictive_data_filter_params, 'string'
@@ -233,6 +240,7 @@ module FacebookAds
         api.has_param :data_processing_options_state, 'int'
         api.has_param :device_token, 'string'
         api.has_param :event, { enum: %w{CUSTOM_APP_EVENTS DEFERRED_APP_LINK MOBILE_APP_INSTALL }}
+        api.has_param :event_id, 'string'
         api.has_param :extinfo, 'object'
         api.has_param :include_dwell_data, 'bool'
         api.has_param :include_video_data, 'bool'
@@ -244,10 +252,12 @@ module FacebookAds
         api.has_param :page_id, 'int'
         api.has_param :page_scoped_user_id, 'int'
         api.has_param :receipt_data, 'string'
+        api.has_param :sdk_version, 'string'
         api.has_param :ud, 'hash'
         api.has_param :url_schemes, { list: 'string' }
         api.has_param :user_id, 'string'
         api.has_param :user_id_type, { enum: %w{INSTANT_GAMES_PLAYER_ID }}
+        api.has_param :vendor_id, 'string'
         api.has_param :windows_attribution_id, 'string'
       end
     end
@@ -323,8 +333,10 @@ module FacebookAds
       edge.post do |api|
         api.has_param :app_id, 'int'
         api.has_param :is_aem_ready, 'bool'
-        api.has_param :is_aem_v2_ready, 'bool'
+        api.has_param :is_app_aem_install_ready, 'bool'
+        api.has_param :is_app_aem_ready, 'bool'
         api.has_param :is_skan_ready, 'bool'
+        api.has_param :message, 'string'
       end
     end
 
@@ -429,19 +441,30 @@ module FacebookAds
       end
     end
 
-    has_edge :events do |edge|
-      edge.get 'Event' do |api|
-        api.has_param :include_canceled, 'bool'
-        api.has_param :type, { enum: -> { Event::TYPE }}
+    has_edge :domain_reports do |edge|
+      edge.post do |api|
+        api.has_param :tracking_domains, { list: 'string' }
       end
     end
 
-    has_edge :insights_push_schedule do |edge|
-      edge.get
+    has_edge :iap_purchases do |edge|
+      edge.get do |api|
+        api.has_param :order_id, 'string'
+      end
     end
 
     has_edge :ios_dialog_configs do |edge|
       edge.get
+    end
+
+    has_edge :linked_dataset do |edge|
+      edge.get 'AdsDataset'
+    end
+
+    has_edge :message_templates do |edge|
+      edge.get do |api|
+        api.has_param :template_id, 'string'
+      end
     end
 
     has_edge :mmp_auditing do |edge|
@@ -453,6 +476,7 @@ module FacebookAds
         api.has_param :click_attr_window, 'int'
         api.has_param :custom_events, { list: 'object' }
         api.has_param :decline_reason, 'string'
+        api.has_param :engagement_type, 'string'
         api.has_param :event, 'string'
         api.has_param :event_reported_time, 'int'
         api.has_param :fb_ad_id, 'int'
@@ -486,22 +510,14 @@ module FacebookAds
       edge.get 'NullNode'
     end
 
+    has_edge :objects do |edge|
+      edge.get 'NullNode'
+    end
+
     has_edge :occludespopups do |edge|
       edge.post do |api|
         api.has_param :flash, 'bool'
         api.has_param :unity, 'bool'
-      end
-    end
-
-    has_edge :page_activities do |edge|
-      edge.post 'Application' do |api|
-        api.has_param :advertiser_tracking_enabled, 'bool'
-        api.has_param :application_tracking_enabled, 'bool'
-        api.has_param :custom_events, { list: 'object' }
-        api.has_param :logging_source, { enum: -> { Application::LOGGING_SOURCE }}
-        api.has_param :logging_target, { enum: -> { Application::LOGGING_TARGET }}
-        api.has_param :page_id, 'int'
-        api.has_param :page_scoped_user_id, 'int'
       end
     end
 
@@ -535,6 +551,10 @@ module FacebookAds
       edge.get
     end
 
+    has_edge :server_domain_infos do |edge|
+      edge.get
+    end
+
     has_edge :subscribed_domains do |edge|
       edge.get
       edge.post 'Application' do |api|
@@ -556,6 +576,7 @@ module FacebookAds
         api.has_param :fields, { list: 'string' }
         api.has_param :object, 'string'
       end
+      edge.get
       edge.post do |api|
         api.has_param :callback_url, 'string'
         api.has_param :fields, { list: 'string' }
@@ -571,6 +592,21 @@ module FacebookAds
         api.has_param :file_name, 'object'
         api.has_param :file_type, 'object'
         api.has_param :session_type, { enum: %w{attachment }}
+      end
+    end
+
+    has_edge :whatsapp_business_solution do |edge|
+      edge.post 'Application' do |api|
+        api.has_param :owner_permissions, { list: { enum: -> { Application::OWNER_PERMISSIONS }} }
+        api.has_param :partner_app_id, 'string'
+        api.has_param :partner_permissions, { list: { enum: -> { Application::PARTNER_PERMISSIONS }} }
+        api.has_param :solution_name, 'string'
+      end
+    end
+
+    has_edge :whatsapp_business_solutions do |edge|
+      edge.get do |api|
+        api.has_param :role, { enum: %w{OWNER PARTNER }}
       end
     end
 
